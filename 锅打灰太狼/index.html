@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>锅打灰太狼</title>
+		<style>
+			*{
+				margin: 0;
+				padding: 0;
+				font-family: "微软雅黑";
+			}
+			#outer{
+				background-image:url(img/game_bg.jpg);
+				width: 320px;
+				height: 480px;
+				margin: 0 auto;
+				position: relative;
+			}
+			#score{
+				color: white;
+				position: absolute;
+				left:65px;
+				top: 13px;
+			}
+			#time{
+				position: absolute;
+				left:64px;
+				top: 65px;
+				width: 180px;
+				height: 16px;
+				background: url(img/progress.png) 0 0 no-repeat;
+			}
+			#wolfs{
+				position: absolute;
+			}
+			#wolfs img{ 
+				position:absolute;
+			}
+			#startMenu{
+				position: absolute;
+				left:0;
+				top: 200px;
+				width: 320px;
+				text-align: center;
+				
+			}
+			#start,#endMenu,#reload{
+				line:50px;
+				font-size: 30px;
+				font-weight: bold;
+				color:#F00;
+				display: block;
+				cursor: pointer;
+			}
+			
+			#endMenu {
+				position: absolute;
+				left:0;
+				top: 200px;
+				width: 320px;
+				text-align: center;
+				display: none;
+			}
+			#reload{
+				position: absolute;
+				bottom: 134px;
+				left: 93px;
+				display: none;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<div id="outer">
+			<div id="score">0</div>
+			<div id="time"></div>
+			<div id="wolfs"></div>
+			<div id="startMenu">
+				<span id="start">开始游戏</span>
+			</div>
+			<div id="endMenu"></div>
+			<span id="reload">重新开始</span>
+			
+		</div>
+		<script type="text/javascript">
+			var score = document.getElementById("score");
+			var time = document.getElementById("time");
+			var wolfs = document.getElementById("wolfs");
+			var startMenu = document.getElementById("startMenu");
+			var start = document.getElementById("start");
+			var endMenu = document.getElementById("endMenu");
+			var reload = document.getElementById("reload");
+			//动画周期
+			var liftCircle = [0,1,2,3,4,5,4,3,2,1,0];
+			//洞穴坐标
+			arrPos = [["98px","115px"],["17px","160px"],["15px","221px"],["30px","294px"],["122px","274px"],["207px","296px"],["200px","212px"],["187px","142px"],["100px","192px"]];
+			
+			//创建随机数
+			function randomNum(x,y){
+				 return parseInt((Math.random()*(y-x)))+x ;
+			}
+			
+			var timer = 0;
+			//开始游戏
+			start.onclick = function(){
+				startMenu.style.display="none";
+				timeLineRun();
+				timer = setInterval(func,1000);
+				
+			}
+			
+			function func() {
+				if (time.offsetWidth > 0) {
+					//创建灰太狼
+					createWolf();
+				} else {
+					clearInterval(timer);
+				}
+			}
+			
+			
+			//时间进度条
+			function timeLineRun(){
+				var timeLineTimer = setInterval(function(){
+					if(time.offsetWidth>0){
+						time.style.width = (time.offsetWidth-1) + "px";
+					} else {
+						clearInterval(timeLineTimer);
+						clearInterval(timer);
+						endMenu.innerHTML= "游戏结束!<br>你的得分是:"+score.innerHTML;
+						endMenu.style.display="block";
+						reload.style.display="block";
+						
+					}
+				},100);
+				
+			}
+			
+			reload.onclick = function(){
+				window.location.reload();
+			}
+			
+			
+			
+			//创建狼种
+			function createWolf(){
+				
+				var wolf = document.createElement("img");
+				var wolfType = randomNum(0,100)>80 ? "x" : "h";
+				var a = randomNum(0,9);
+				var position = arrPos[a];
+				var wolfIndex = 0;
+				
+				wolf.src = "img/"+ wolfType + wolfIndex +".png";
+				wolfs.appendChild(wolf);
+				wolfs.style.left = position[0];
+				wolfs.style.top = position[1];
+				wolfs.appendChild(wolf);	
+				
+				//让狼动起来		
+				 var temp = 0;
+				 var showTime = setInterval(function(){
+					 if(temp<liftCircle.length){
+						 wolfIndex = liftCircle[temp];
+						 wolf.src = "img/"+ wolfType + wolfIndex +".png";
+						 temp++;
+					 } else {
+						 clearInterval(showTime);
+						 wolfs.removeChild(wolf);
+					 }
+				 },100);
+						
+				//确保只能点击一次
+				var oneClick = false;
+				//击打狼的时间
+				wolfs.onclick = function(){
+					clearInterval(timer);
+					if(oneClick){
+						return;
+					}
+					
+					//计算分数
+					if(wolfType == "h"){
+						score.innerHTML = parseInt(score.innerHTML)+10;
+					} else {
+						score.innerHTML = parseInt(score.innerHTML)-10;
+					}
+					
+					//替换被打击后的效果
+					clearInterval(showTime);
+					wolfIndex = 6;
+					var hitWolf =setInterval( function(){
+						if(wolfIndex<10){
+							wolf.src = "img/"+ wolfType + wolfIndex +".png";
+							wolfIndex++;
+						} else {
+							clearInterval(hitWolf);
+							wolfs.removeChild(wolf);
+							timer = setInterval(func,1000);
+						}
+					},100);
+					oneClick = true;
+				}
+						
+				
+			}
+			
+			
+		</script>
+	</body>
+</html>
